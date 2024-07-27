@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Quiz App</title>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div id="room">
+    <h2>Room</h2>
+    <p id="roomId">Room ID: </p>
+    <p id="status">Status: </p>
+  </div>
+  <div id="question">
+    <h2>Question</h2>
+    <p id="questionText">Question: </p>
+    <div id="options"></div>
+  </div>
+  <div id="result">
+    <h2>Result</h2>
+    <p id="score">Score: </p>
+  </div>
+
+  <script>
+    const socket = io('http://localhost:3000');
+
+    socket.on('connect', () => {
+      console.log('Connected to the server');
+    });
+
+    socket.on('roomJoined', (room) => {
+      document.getElementById('roomId').innerText = `Room ID: ${room.roomId}`;
+      document.getElementById('status').innerText = `Status: ${room.status}`;
+    });
+
+    socket.on('nextQuestion', (question) => {
+      document.getElementById('questionText').innerText = question.question;
+      const options = question.options.map((option, index) => 
+        `<button onclick="submitAnswer(${index})">${option}</button>`
+      ).join('');
+      document.getElementById('options').innerHTML = options;
+    });
+
+    socket.on('gameOver', (scores) => {
+      document.getElementById('score').innerText = `Score: ${JSON.stringify(scores)}`;
+    });
+
+    function submitAnswer(index) {
+      socket.emit('submitAnswer', { roomId: 'room_1', userId: 'user_1', answerIndex: index });
+    }
+  </script>
+</body>
+</html>
